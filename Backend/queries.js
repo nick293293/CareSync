@@ -12,7 +12,14 @@ const verifyAdminCredentials = (username, callback) => {
   db.query(query, [username], callback); // Fetch user by username for admin login
 };
 
+// Function to look up a patient by ID
+const getPatientById = (patient_id, callback) => {
+  const query = "SELECT * FROM patients WHERE patient_id = ?"; 
+  db.query(query, [patient_id], callback);
+};
+
 module.exports = {
   verifyStaffCredentials,
   verifyAdminCredentials,
+  getPatientById,
 };
