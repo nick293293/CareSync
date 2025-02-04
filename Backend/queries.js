@@ -12,14 +12,21 @@ const verifyAdminCredentials = (username, callback) => {
   db.query(query, [username], callback); // Fetch user by username for admin login
 };
 
-// Function to look up a patient by ID
-const getPatientById = (patient_id, callback) => {
-  const query = "SELECT * FROM patients WHERE patient_id = ?"; 
-  db.query(query, [patient_id], callback);
+// Function to look up a patient by ID or name
+const lookupPatient = (searchTerm, callback) => {
+    const query = "SELECT patient_id, name, dob, address, phone_number, email FROM patients WHERE patient_id = ? OR name LIKE ?";
+    db.query(query, [searchTerm, `%${searchTerm}%`], callback);
+};
+
+// Function to generate a report of all patients
+const generatePatientReport = (callback) => {
+    const query = "SELECT patient_id, name, dob, address, phone_number, email FROM patients";
+    db.query(query, [], callback);
 };
 
 module.exports = {
   verifyStaffCredentials,
   verifyAdminCredentials,
-  getPatientById,
+  lookupPatient,
+  generatePatientReport
 };
