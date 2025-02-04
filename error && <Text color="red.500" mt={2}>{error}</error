@@ -1,8 +1,9 @@
   import React,{ useState } from "react";
-  import { Box, Heading, Text, Button, Flex, Stack, Input } from "@chakra-ui/react";
+  import { Box, Heading, Text, Button, Flex, Stack, Input, Spinner } from "@chakra-ui/react";
   import { useNavigate } from "react-router-dom";
-  import { jsPDF } from "jspdf"; // Import jsPDF for generating PDFs
-    
+  import { jsPDF } from "jspdf"; // Import jsPDF
+  import "jspdf-autotable"; // Required for PDF table formatting
+ 
   const StaffPage = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
@@ -38,6 +39,7 @@
       }
     } catch (err) {
       setError("Network error. Please try again.");
+      setPatients([]);
     } finally {
       setLoading(false);  //Ensures loading state is reset
     }
@@ -54,12 +56,15 @@
         const doc = new jsPDF();
         doc.text("Patient Report", 10, 10);
 
-        data.forEach((patient, index) => {
-          doc.text(
-            `ID: ${patient.patient_id}, Name: ${patient.name}, DOB: ${patient.dob}`,
-            10,
-            20 + index * 10
-          );
+        // Format the PDF using a table layout
+        doc.autoTable({
+          head: [["ID", "Name", "DOB", "Phone"]],
+          body: data.map(patient => [
+            patient.patient_id, 
+            patient.name, 
+            patient.dob, 
+            patient.phone_number
+          ]),
         });
 
         doc.save("patient_report.pdf");
@@ -167,7 +172,6 @@
               
                 {/* Show loading indicator when searching */}
             {loading && <Text mt={2} color="gray.600">Searching... <Spinner size="sm" /></Text>}
-            {error && <Text color="red.500" mt={2}>{error}</Text>}
               {/* Display Search Results */}
               {error && <Text color="red.500" mt={2}>{error}</Text>}
               {patients.length > 0 && (
