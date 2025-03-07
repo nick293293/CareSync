@@ -14,7 +14,6 @@ import {
 import { FaUser, FaLock } from "react-icons/fa";
 import axios from "axios";
 import { useNavigate } from "react-router-dom"; // Import for navigation
-
 const StaffLogin = () => {
   const [username, setUsername] = useState(""); // State for username
   const [password, setPassword] = useState(""); // State for password

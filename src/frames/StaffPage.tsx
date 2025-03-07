@@ -11,18 +11,17 @@ import {
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import PatientLookup from "../components/PatientLookup.jsx";
+import PatientLookup from "../components/PatientLookup"; 
 
-
- // Import Patient Lookup Component
 
 const StaffPage = () => {
   const navigate = useNavigate();
+  
   const [todaysAppointments, setTodaysAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const { isOpen, onOpen, onClose } = useDisclosure(); // Controls the modal visibility
+  const { isOpen, onOpen, onClose } = useDisclosure(); // 
 
   // Fetch today's appointments from backend
   React.useEffect(() => {
@@ -95,8 +94,9 @@ const StaffPage = () => {
         </Stack>
       </Box>
 
-      {/* Include the Patient Lookup Component */}
+      {/* ✅ Add the Patient Lookup Modal Here */}
       <PatientLookup isOpen={isOpen} onClose={onClose} />
+
     </Flex>
   );
 };

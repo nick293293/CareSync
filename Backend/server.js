@@ -110,35 +110,135 @@ app.get("/api/todays-appointments", (req, res) => {
 });
 
 // =============================
-// 🔹 Look Up Patient API
+// 🔹 Patient Lookup API (Secure SQL)
 // =============================
 app.get("/api/patients", (req, res) => {
-  const { query } = req.query; // Get search input from frontend
+  const query = req.query.query || "";
 
-  if (!query) {
+  if (!query.trim()) {
     return res.status(400).json({ success: false, message: "Search query required" });
   }
 
-  // Search patients by name or ID
-  const sql = "SELECT * FROM patients WHERE name LIKE ? OR CAST(patient_id AS CHAR) = ?";
-db.query(sql, [`%${query}%`, query.toString()], (err, results) => {
+  const sql = "SELECT * FROM patients WHERE LOWER(name) LIKE LOWER(?) OR patient_id = ?";
+  db.query(sql, [`%${query}%`, isNaN(query) ? 0 : parseInt(query)], (err, results) => {
+    if (err) return res.status(500).json({ success: false, message: "Database error" });
+    res.json({ success: results.length > 0, data: results });
+  });
+});
+// Add patients
+app.post("/api/patients", (req, res) => {
+  const { name, dob, address, phone_number, email } = req.body;
+
+  if (!name || !dob) {
+    return res.status(400).json({ success: false, message: "Name and DOB are required" });
+  }
+
+  const sql = "INSERT INTO patients (name, dob, address, phone_number, email) VALUES (?, ?, ?, ?, ?)";
+  db.query(sql, [name, dob, address, phone_number, email], (err, result) => {
     if (err) {
-      console.error("❌ Error fetching patients:", err);
+      console.error("❌ Error adding patient:", err);
       return res.status(500).json({ success: false, message: "Database error" });
     }
 
-    if (results.length === 0) {
-      return res.json({ success: false, message: "No patients found" });
+    res.json({ success: true, message: "Patient added successfully", data: { id: result.insertId, name, dob, address, phone_number, email } });
+  });
+});
+
+//Remove Patients
+app.delete("/api/patients/:id", (req, res) => {
+  const { id } = req.params;
+
+  const sql = "DELETE FROM patients WHERE patient_id = ?";
+  db.query(sql, [id], (err, result) => {
+    if (err) {
+      console.error(" Error deleting patient:", err);
+      return res.status(500).json({ success: false, message: "Database error" });
     }
 
-    res.json({ success: true, data: results });
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: "Patient not found" });
+    }
+
+    res.json({ success: true, message: "Patient removed successfully" });
+  });
+});
+
+
+
+app.get("/api/patients/:id/medical-reports", (req, res) => {
+  const patientId = req.params.id;
+
+  const sql = "SELECT * FROM medical_reports WHERE patient_id = ?";
+  db.query(sql, [patientId], (err, results) => {
+    if (err) {
+      console.error("❌ Error fetching medical reports:", err);
+      return res.status(500).json({ success: false, message: "Database error" });
+    }
+
+    res.json({ success: results.length > 0, data: results });
+  });
+});
+
+
+// =============================
+// 🔹 Authorize Doctor Middleware
+// =============================
+/*const authorizeDoctor = (req, res, next) => {
+  const username = req.headers["x-username"];
+
+  if (!username) {
+    return res.status(400).json({ success: false, message: "Username is required in headers" });
+  }
+
+  const sql = "SELECT role FROM users WHERE username = ?";
+  db.query(sql, [username], (err, results) => {
+    if (err) {
+      return res.status(500).json({ success: false, message: "Database error" });
+    }
+
+    if (results.length === 0 || results[0].role !== "Doctor") {
+      return res.status(403).json({ success: false, message: "Unauthorized: Only doctors can modify medical reports" });
+    }
+
+    next(); // ✅ Ensure this is the last line in the function
+  });
+}; */
+
+/*// =============================
+// 🔹 Get Medical Reports
+// =============================
+app.get("/api/patients/:id/medical-reports", (req, res) => {
+  const patientId = req.params.id;
+
+  const sql = "SELECT report_id, title, details, report_date FROM medical_reports WHERE patient_id = ?";
+  db.query(sql, [patientId], (err, results) => {
+    if (err) return res.status(500).json({ success: false, message: "Database error" });
+
+    res.json({ success: results.length > 0, data: results });
   });
 });
 
 // =============================
-// 🔹 Start the Server
+// 🔹 Add Medical Report (Only Doctors)
 // =============================
-const PORT = 5000;
-app.listen(PORT, () => {
-  console.log(`✅ Server is running on http://localhost:${PORT}`);
+app.post("/api/patients/:id/medical-reports", authorizeDoctor, (req, res) => {
+  const { id } = req.params;
+  const { title, details, report_date } = req.body;
+
+  if (!title || !details || !report_date || isNaN(Date.parse(report_date))) {
+    return res.status(400).json({ success: false, message: "Invalid or missing medical report details" });
+  }
+
+  const sql = "INSERT INTO medical_reports (patient_id, title, details, report_date) VALUES (?, ?, ?, ?)";
+  db.query(sql, [id, title, details, report_date], (err) => {
+    if (err) return res.status(500).json({ success: false, message: "Database error" });
+
+    res.json({ success: true, message: "Medical report added successfully" });
+  });
 });
+*/
+// =============================
+// 🔹 Start Server
+// =============================
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`✅ Server running on http://localhost:${PORT}`));
