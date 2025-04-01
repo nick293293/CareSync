@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import axios from "axios";
-
 import {
   Input,
   Button,
@@ -15,10 +14,12 @@ import {
   ModalCloseButton,
   useToast,
 } from "@chakra-ui/react";
+
 interface PatientLookupProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
 interface Patient {
   patient_id: number;
   name: string;
@@ -28,10 +29,9 @@ interface Patient {
   email: string;
 }
 
-
 const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState("");
-  const [patients, setPatients] = useState<Patient[]>([]); //  Now TypeScript knows it's an array of Patients
+  const [patients, setPatients] = useState<Patient[]>([]);
   const [error, setError] = useState("");
   const [newPatient, setNewPatient] = useState<Patient>({
     patient_id: 0,
@@ -41,13 +41,10 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
     phone_number: "",
     email: "",
   });
-  const [selectedPatientReports, setSelectedPatientReports] = useState<any[]>([]);
-  const [showReports, setShowReports] = useState<number | null>(null);
 
   const toast = useToast();
 
-
-  // 🔹 Search Patients
+  // Search Patients
   const searchPatients = async () => {
     if (!query.trim()) {
       setError("Enter patient name or ID");
@@ -70,30 +67,26 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  // 🔹 Add Patient
+  // Add Patient
   const addPatient = async () => {
     try {
-      // Ensure DOB is in 'YYYY-MM-DD' format
       const formattedDob = new Date(newPatient.dob).toISOString().split("T")[0];
-  
       const response = await axios.post("http://localhost:5000/api/patients", {
         ...newPatient,
-        dob: formattedDob, //  Fix: Correct date format
+        dob: formattedDob,
       });
-  
-      console.log(" API Response:", response.data);
-  
+
       if (response.data.success) {
         toast({ title: "New Patient was added", status: "success", duration: 3000, isClosable: true });
-        searchPatients(); // Refresh list
+        searchPatients();
         setNewPatient({ patient_id: 0, name: "", dob: "", address: "", phone_number: "", email: "" });
       } else {
         console.error(" API Error:", response.data.message);
         setError(response.data.message);
       }
-    } catch (err: unknown) { // Explicitly mark `err` as `unknown`
+    } catch (err: unknown) {
       if (err instanceof Error) {
-        console.error(" Axios Error:", err.message); // Access error message safely
+        console.error(" Axios Error:", err.message);
         setError(`Error adding patient: ${err.message}`);
       } else {
         console.error(" Unknown Error:", err);
@@ -101,34 +94,32 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
       }
     }
   };
-  const fetchMedicalReports = async (patientId: number) => {
-    try {
-      const response = await axios.get(`http://localhost:5000/api/patients/${patientId}/medical-reports`);
-  
-      if (response.data.success) {
-        setSelectedPatientReports(response.data.data);
-        setShowReports(patientId); // Show reports for this specific patient
-      } else {
-        setSelectedPatientReports([]);
-        console.warn("⚠️ No reports found.");
-      }
-    } catch (err) {
-      console.error("Error fetching medical reports:", err);
-    }
-  };
-  
 
-  // 🔹 Remove Patient
-  const removePatient = async (patientId: number) => {  // Fix: Explicitly set type
+  // Remove Patient
+  const removePatient = async (patientId: number) => {
     try {
-      await axios.delete(`http://localhost:5000/api/patients/${patientId}`);
-      toast({ title: "Patient removed successfully", status: "info", duration: 3000, isClosable: true });
-      searchPatients(); // Refresh list
-    } catch (err) {
+      await axios.delete(`http://localhost:5000/api/patients/${patientId}`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      toast({
+        title: "Patient removed successfully",
+        status: "info",
+        duration: 3000,
+        isClosable: true,
+      });
+      searchPatients();
+    } catch (err: any) {
+      console.error("Error removing patient:", err);
       setError("Error removing patient");
     }
   };
 
+  // Download PDF Medical Report
+  const handleDownloadPDF = (patientId: number) => {
+    window.open(`http://localhost:5000/api/reports/${patientId}/pdf`, "_blank");
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -137,7 +128,6 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
         <ModalHeader>Look Up Patient</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          {/* 🔹 Search Section */}
           <Input
             placeholder="Enter Patient Name or ID"
             value={query}
@@ -150,7 +140,6 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
 
           {error && <Text color="red.500" mt={3}>{error}</Text>}
 
-          {/* 🔹 Patient List */}
           <VStack mt={4} spacing={3} align="start">
             {patients.map((patient) => (
               <Box key={patient.patient_id} p={3} borderWidth="1px" borderRadius="md">
@@ -160,41 +149,28 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
                 <Text>Address: {patient.address}</Text>
                 <Text>Phone: {patient.phone_number}</Text>
                 <Text>Email: {patient.email}</Text>
-                
-                {/* 🔹 Buttons for Remove & View Reports */}
-                <Button colorScheme="red" size="sm" mt={2} onClick={() => removePatient(patient.patient_id)}>
+
+                <Button
+                  colorScheme="red"
+                  size="sm"
+                  mt={2}
+                  onClick={() => removePatient(patient.patient_id)}
+                >
                   Remove Patient
                 </Button>
-                <Button colorScheme="blue" size="sm" mt={2} onClick={() => fetchMedicalReports(patient.patient_id)}>
-               View Medical Reports
-               </Button>
-{/*  Show Medical Reports Below Patient Details */}
-{showReports === patient.patient_id && (
-  <Box mt={4} p={3} borderWidth="1px" borderRadius="md" bg="gray.50">
-    <Text fontWeight="bold">Medical Reports:</Text>
-    {selectedPatientReports.length > 0 ? (
-      selectedPatientReports.map((report) => (
-        <Box key={report.report_id} p={3} borderWidth="1px" borderRadius="md" mt={2} bg="white">
-          <Text fontWeight="bold">{report.title}</Text>
-          <Text>{report.details}</Text>
-          <Text fontSize="sm" color="gray.500">
-            Date: {new Date(report.report_date).toLocaleDateString()}
-          </Text>
-        </Box>
-      ))
-    ) : (
-      <Text>No medical reports found.</Text>
-    )}
-    {/*  Add a "Close Reports" button */}
-    <Button colorScheme="red" size="sm" mt={3} onClick={() => setShowReports(null)}>
-      Close Reports
-    </Button>
-  </Box>
-)}
+                <Button
+                  colorScheme="blue"
+                  size="sm"
+                  mt={2}
+                  onClick={() => handleDownloadPDF(patient.patient_id)}
+                >
+                  Download PDF Report
+                </Button>
               </Box>
             ))}
           </VStack>
- {/* Add Patient Section */}
+
+          {/* Add Patient Section */}
           <Text fontWeight="bold" mt={5}>Add New Patient</Text>
           <Input placeholder="Name" value={newPatient.name} onChange={(e) => setNewPatient({ ...newPatient, name: e.target.value })} mb={2} />
           <Input placeholder="Date of Birth" type="date" value={newPatient.dob} onChange={(e) => setNewPatient({ ...newPatient, dob: e.target.value })} mb={2} />
@@ -204,7 +180,6 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
           <Button colorScheme="green" onClick={addPatient} mt={2}>
             Add Patient
           </Button>
-
         </ModalBody>
       </ModalContent>
     </Modal>

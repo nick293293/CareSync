@@ -148,18 +148,42 @@ app.post("/api/patients", (req, res) => {
 app.delete("/api/patients/:id", (req, res) => {
   const { id } = req.params;
 
-  const sql = "DELETE FROM patients WHERE patient_id = ?";
-  db.query(sql, [id], (err, result) => {
+  // 1. Delete medical records
+  const deleteMedicalRecords = "DELETE FROM medicalrecords WHERE patient_id = ?";
+  db.query(deleteMedicalRecords, [id], (err) => {
     if (err) {
-      console.error(" Error deleting patient:", err);
-      return res.status(500).json({ success: false, message: "Database error" });
+      console.error("Error deleting medical records:", err);
+      return res.status(500).json({ error: "Failed to delete medical records" });
     }
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ success: false, message: "Patient not found" });
-    }
+    // 2. Delete billing records
+    const deleteBilling = "DELETE FROM billing WHERE patient_id = ?";
+    db.query(deleteBilling, [id], (err) => {
+      if (err) {
+        console.error("Error deleting billing records:", err);
+        return res.status(500).json({ error: "Failed to delete billing records" });
+      }
 
-    res.json({ success: true, message: "Patient removed successfully" });
+      // 3. Delete appointments
+      const deleteAppointments = "DELETE FROM appointments WHERE patient_id = ?";
+      db.query(deleteAppointments, [id], (err) => {
+        if (err) {
+          console.error("Error deleting appointments:", err);
+          return res.status(500).json({ error: "Failed to delete appointments" });
+        }
+
+        // 4. Finally, delete patient
+        const deletePatient = "DELETE FROM patients WHERE patient_id = ?";
+        db.query(deletePatient, [id], (err) => {
+          if (err) {
+            console.error("Error deleting patient:", err);
+            return res.status(500).json({ error: "Failed to delete patient" });
+          }
+
+          res.json({ message: "Patient and all related records deleted successfully" });
+        });
+      });
+    });
   });
 });
 
@@ -171,7 +195,7 @@ app.get("/api/patients/:id/medical-reports", (req, res) => {
   const sql = "SELECT * FROM medical_reports WHERE patient_id = ?";
   db.query(sql, [patientId], (err, results) => {
     if (err) {
-      console.error("❌ Error fetching medical reports:", err);
+      console.error("Error fetching medical reports:", err);
       return res.status(500).json({ success: false, message: "Database error" });
     }
 
@@ -237,6 +261,38 @@ app.post("/api/patients/:id/medical-reports", authorizeDoctor, (req, res) => {
   });
 });
 */
+const PDFDocument = require("pdfkit");
+
+app.get("/api/reports/:patientId/pdf", (req, res) => {
+  const { patientId } = req.params;
+
+  const sql = "SELECT * FROM medicalrecords WHERE patient_id = ?";
+  db.query(sql, [patientId], (err, records) => {
+    if (err) {
+      console.error("Error fetching records:", err);
+      return res.status(500).send("Error generating report");
+    }
+
+    const doc = new PDFDocument();
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "attachment; filename=medical_report.pdf");
+    doc.pipe(res);
+
+    doc.fontSize(20).text(`Medical Report for Patient ID: ${patientId}`, { underline: true });
+    doc.moveDown();
+
+    records.forEach((record, index) => {
+      doc.fontSize(14).text(`Record #${index + 1}`);
+      doc.text(`Doctor ID: ${record.doctor_id}`);
+      doc.text(`Diagnosis: ${record.diagnosis}`);
+      doc.text(`Treatment: ${record.treatment}`);
+      doc.moveDown();
+    });
+
+    doc.end();
+  });
+});
+
 // =============================
 // 🔹 Start Server
 // =============================
