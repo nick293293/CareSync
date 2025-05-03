@@ -13,6 +13,8 @@ import {
   ModalBody,
   ModalCloseButton,
   useToast,
+  useDisclosure,
+  ModalFooter,
 } from "@chakra-ui/react";
 
 interface PatientLookupProps {
@@ -46,6 +48,14 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
   const [isPdfModalOpen, setPdfModalOpen] = useState(false);
 
   const toast = useToast();
+
+  // Confirmation modal for patient removal
+  const {
+    isOpen: isConfirmOpen,
+    onOpen: onConfirmOpen,
+    onClose: onConfirmClose,
+  } = useDisclosure();
+  const [patientToRemove, setPatientToRemove] = useState<Patient | null>(null);
 
   // Search Patients
   const searchPatients = async () => {
@@ -98,10 +108,17 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  // Confirm and then remove patient
+  const confirmRemovePatient = (patient: Patient) => {
+    setPatientToRemove(patient);
+    onConfirmOpen();
+  };
+
   // Remove Patient
-  const removePatient = async (patientId: number) => {
+  const removePatient = async () => {
+    if (!patientToRemove) return;
     try {
-      await axios.delete(`http://localhost:5000/api/patients/${patientId}`, {
+      await axios.delete(`http://localhost:5000/api/patients/${patientToRemove.patient_id}`, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -116,15 +133,18 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
     } catch (err: any) {
       console.error("Error removing patient:", err);
       setError("Error removing patient");
+    } finally {
+      onConfirmClose();
+      setPatientToRemove(null);
     }
   };
 
-  // Download PDF
+  // Download PDF Medical Report
   const handleDownloadPDF = (patientId: number) => {
     window.open(`http://localhost:5000/api/reports/${patientId}/pdf`, "_blank");
   };
 
-  // Preview PDF
+  // Preview PDF Medical Report
   const handlePreviewPDF = (patientId: number) => {
     const url = `http://localhost:5000/api/reports/${patientId}/pdf`;
     setPdfUrl(url);
@@ -133,6 +153,7 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
 
   return (
     <>
+      {/* Patient Lookup Modal */}
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
@@ -165,7 +186,7 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
                     colorScheme="red"
                     size="sm"
                     mt={2}
-                    onClick={() => removePatient(patient.patient_id)}
+                    onClick={() => confirmRemovePatient(patient)}
                   >
                     Remove Patient
                   </Button>
@@ -223,6 +244,29 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
               <Text>No PDF available</Text>
             )}
           </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      {/* Confirm Remove Modal */}
+      <Modal isOpen={isConfirmOpen} onClose={onConfirmClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Confirm Deletion</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text>
+              Are you sure you want to remove{" "}
+              <strong>{patientToRemove?.name}</strong>?
+            </Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={onConfirmClose}>
+              Cancel
+            </Button>
+            <Button colorScheme="red" onClick={removePatient}>
+              Remove
+            </Button>
+          </ModalFooter>
         </ModalContent>
       </Modal>
     </>
