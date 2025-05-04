@@ -588,7 +588,7 @@ app.get("/api/reports/:patientId/pdf", (req, res) => {
 
     const doc = new PDFDocument();
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", "attachment; filename=medical_report.pdf");
+    res.setHeader("Content-Disposition", "inline");
     doc.pipe(res);
 
     doc.fontSize(20).text(`Medical Report for Patient ID: ${patientId}`, { underline: true });
@@ -611,3 +611,4 @@ const PORT = 5000; // Backend port
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+
