@@ -103,7 +103,7 @@ const StaffPage = () => {
   const getPatient = async (patientId: number) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/getPatient/${patientId}`
+        `https://caresync-psh6.onrender.com/api/getPatient/${patientId}`
       );
       const result = await response.json();
 
@@ -122,7 +122,7 @@ const StaffPage = () => {
     const fetchAppointments = async () => {
       try {
         const response = await axios.get<{ data: Appointment[] }>(
-          "http://localhost:5000/api/todays-appointments"
+          "https://caresync-psh6.onrender.com/api/todays-appointments"
         );
         setTodaysAppointments(response.data.data); // ✅ No more TypeScript error
         setLoading(false);

@@ -63,7 +63,7 @@ const ManageAppointments = () => {
   const fetchAppointments = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/appointments"
+        "https://caresync-psh6.onrender.com/api/appointments"
       );
       if (response.data.success) setAppointments(response.data.data);
       else setError("Failed to load appointments: " + response.data.message);
@@ -76,7 +76,9 @@ const ManageAppointments = () => {
 
   const fetchDoctors = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/doctors");
+      const res = await axios.get(
+        "https://caresync-psh6.onrender.com/api/doctors"
+      );
       if (res.data.success) setDoctors(res.data.data);
     } catch (err) {
       console.error("Error fetching doctors:", err);
@@ -85,7 +87,9 @@ const ManageAppointments = () => {
 
   const fetchPatients = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/patients");
+      const response = await axios.get(
+        "https://caresync-psh6.onrender.com/api/patients"
+      );
       if (response.data.success) {
         setPatients(response.data.data);
       }
@@ -124,7 +128,7 @@ const ManageAppointments = () => {
 
     try {
       const res = await axios.put(
-        `http://localhost:5000/api/appointments/${editingAppointment.appointment_id}`,
+        `https://caresync-psh6.onrender.com/api/appointments/${editingAppointment.appointment_id}`,
         {
           doctor_id: updatedDoctor,
           date: updatedDate,
@@ -152,7 +156,7 @@ const ManageAppointments = () => {
       return;
     try {
       const res = await axios.delete(
-        `http://localhost:5000/api/appointments/${appointmentId}`
+        `https://caresync-psh6.onrender.com/api/appointments/${appointmentId}`
       );
       if (res.data.success) {
         setAppointments(
@@ -176,12 +180,15 @@ const ManageAppointments = () => {
       return alert("Appointments must be between 8:00 AM and 5:00 PM.");
 
     try {
-      const res = await axios.post("http://localhost:5000/api/appointments", {
-        patient_id: selectedPatient.patient_id,
-        doctor_id: updatedDoctor,
-        date: updatedDate,
-        time: updatedTime,
-      });
+      const res = await axios.post(
+        "https://caresync-psh6.onrender.com/api/appointments",
+        {
+          patient_id: selectedPatient.patient_id,
+          doctor_id: updatedDoctor,
+          date: updatedDate,
+          time: updatedTime,
+        }
+      );
       if (res.data.success) {
         alert("Appointment added successfully!");
         onAddClose();

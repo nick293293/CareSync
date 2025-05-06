@@ -10,7 +10,7 @@ import {
   InputGroup,
   InputRightElement,
   Text,
-  useToast
+  useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -39,35 +39,37 @@ const AddUser: React.FC = () => {
   const [validationErrors, setValidationErrors] = useState({
     role: "",
     phone: "",
-    email: ""
+    email: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setUserData(prev => ({ ...prev, [name]: value }));
+    setUserData((prev) => ({ ...prev, [name]: value }));
 
     // Real-time validation
     if (name === "role") {
       const validRoles = ["admin", "doctor", "nurse"];
-      setValidationErrors(prev => ({
+      setValidationErrors((prev) => ({
         ...prev,
-        role: validRoles.includes(value.toLowerCase()) ? "" : "Role must be Admin, Doctor, or Nurse"
+        role: validRoles.includes(value.toLowerCase())
+          ? ""
+          : "Role must be Admin, Doctor, or Nurse",
       }));
     }
 
     if (name === "phone") {
       const phoneRegex = /^\d{10}$/;
-      setValidationErrors(prev => ({
+      setValidationErrors((prev) => ({
         ...prev,
-        phone: phoneRegex.test(value) ? "" : "Format must be ##########"
+        phone: phoneRegex.test(value) ? "" : "Format must be ##########",
       }));
     }
 
     if (name === "email") {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      setValidationErrors(prev => ({
+      setValidationErrors((prev) => ({
         ...prev,
-        email: emailRegex.test(value) ? "" : "Invalid email format"
+        email: emailRegex.test(value) ? "" : "Invalid email format",
       }));
     }
   };
@@ -75,7 +77,7 @@ const AddUser: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (Object.values(userData).some(value => value.trim() === "")) {
+    if (Object.values(userData).some((value) => value.trim() === "")) {
       toast({
         title: "Validation Error",
         description: "All fields are required.",
@@ -86,7 +88,7 @@ const AddUser: React.FC = () => {
       return;
     }
 
-    if (Object.values(validationErrors).some(msg => msg !== "")) {
+    if (Object.values(validationErrors).some((msg) => msg !== "")) {
       toast({
         title: "Validation Error",
         description: "Please fix input errors before submitting.",
@@ -98,7 +100,10 @@ const AddUser: React.FC = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/api/add-user", userData);
+      const response = await axios.post(
+        "https://caresync-psh6.onrender.com/api/add-user",
+        userData
+      );
       toast({
         title: "Success!",
         description: response.data.message,
@@ -106,7 +111,13 @@ const AddUser: React.FC = () => {
         duration: 5000,
         isClosable: true,
       });
-      setUserData({ username: "", password: "", role: "", phone: "", email: "" });
+      setUserData({
+        username: "",
+        password: "",
+        role: "",
+        phone: "",
+        email: "",
+      });
     } catch (error) {
       toast({
         title: "Error",
@@ -119,17 +130,35 @@ const AddUser: React.FC = () => {
   };
 
   return (
-    <Flex height="100vh" width="100vw" bg="teal.600" align="center" justify="center">
-      <Button position="absolute" top="20px" left="20px" onClick={() => navigate(-1)}>
+    <Flex
+      height="100vh"
+      width="100vw"
+      bg="teal.600"
+      align="center"
+      justify="center"
+    >
+      <Button
+        position="absolute"
+        top="20px"
+        left="20px"
+        onClick={() => navigate(-1)}
+      >
         <ArrowBackIcon boxSize={7} />
       </Button>
 
       <Box bg="white" p={8} borderRadius="lg" width={700}>
-        <Text fontSize="2xl" fontWeight="bold" color="teal.700" mb="4">Add User</Text>
+        <Text fontSize="2xl" fontWeight="bold" color="teal.700" mb="4">
+          Add User
+        </Text>
         <form onSubmit={handleSubmit}>
           <FormControl isRequired>
             <FormLabel color="gray.700">Username</FormLabel>
-            <Input name="username" value={userData.username} onChange={handleChange} color="black" />
+            <Input
+              name="username"
+              value={userData.username}
+              onChange={handleChange}
+              color="black"
+            />
           </FormControl>
 
           <FormControl isRequired mt={4}>
@@ -207,7 +236,9 @@ const AddUser: React.FC = () => {
             colorScheme="teal"
             mt={6}
             width="full"
-            isDisabled={Object.values(validationErrors).some(msg => msg !== "")}
+            isDisabled={Object.values(validationErrors).some(
+              (msg) => msg !== ""
+            )}
           >
             Add User
           </Button>

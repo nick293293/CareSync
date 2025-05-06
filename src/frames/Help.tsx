@@ -37,7 +37,10 @@ const Help: React.FC = () => {
     e.preventDefault();
 
     try {
-      await axios.post("http://localhost:5000/api/send-email", formData);
+      await axios.post(
+        "https://caresync-psh6.onrender.com/api/send-email",
+        formData
+      );
       toast({
         title: "Success!",
         description: "Your message has been sent.",

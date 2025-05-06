@@ -37,10 +37,13 @@ const ResetPasswordPage = () => {
     }
 
     try {
-      await axios.post("http://localhost:5000/api/reset-password", {
-        token,
-        newPassword,
-      });
+      await axios.post(
+        "https://caresync-psh6.onrender.com/api/reset-password",
+        {
+          token,
+          newPassword,
+        }
+      );
       toast({
         title: "Success!",
         description: "Your password has been reset.",

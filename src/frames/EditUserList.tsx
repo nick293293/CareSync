@@ -32,7 +32,7 @@ const EditUserList: React.FC = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/users")
+      .get("https://caresync-psh6.onrender.com/api/users")
       .then((res) => {
         setUsers(res.data);
         setLoading(false);

@@ -55,7 +55,7 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
 
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/patients?query=${query}`
+        `https://caresync-psh6.onrender.com/api/patients?query=${query}`
       );
       if (response.data.success) {
         setPatients(response.data.data);
@@ -73,10 +73,13 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
   const addPatient = async () => {
     try {
       const formattedDob = new Date(newPatient.dob).toISOString().split("T")[0];
-      const response = await axios.post("http://localhost:5000/api/patients", {
-        ...newPatient,
-        dob: formattedDob,
-      });
+      const response = await axios.post(
+        "https://caresync-psh6.onrender.com/api/patients",
+        {
+          ...newPatient,
+          dob: formattedDob,
+        }
+      );
 
       if (response.data.success) {
         toast({
@@ -112,11 +115,14 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
   // Remove Patient
   const removePatient = async (patientId: number) => {
     try {
-      await axios.delete(`http://localhost:5000/api/patients/${patientId}`, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      await axios.delete(
+        `https://caresync-psh6.onrender.com/api/patients/${patientId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
       toast({
         title: "Patient removed successfully",
         status: "info",
@@ -132,7 +138,10 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
 
   // Download PDF Medical Report
   const handleDownloadPDF = (patientId: number) => {
-    window.open(`http://localhost:5000/api/reports/${patientId}/pdf`, "_blank");
+    window.open(
+      `https://caresync-psh6.onrender.com/api/reports/${patientId}/pdf`,
+      "_blank"
+    );
   };
 
   return (

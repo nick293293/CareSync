@@ -34,7 +34,7 @@ const ForgotPage = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/forgot-password",
+        "https://caresync-psh6.onrender.com/api/forgot-password",
         { email }
       );
 

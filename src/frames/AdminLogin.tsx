@@ -33,7 +33,7 @@ const AdminLogin = () => {
     }
 
     axios
-      .post("http://localhost:5000/api/loginAdmin", {
+      .post("https://caresync-psh6.onrender.com/api/loginAdmin", {
         username,
         password,
       })
