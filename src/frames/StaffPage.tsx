@@ -19,7 +19,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { format } from "date-fns";
-import PatientLookup from "../components/PatientLookup"; // <-- already present
+import PatientLookup from "../components/PatientLookup";
 
 // Define interfaces
 interface Appointment {
@@ -339,9 +339,8 @@ const StaffPage = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-      {/* Patient Lookup Modal */}
-      <PatientLookup isOpen={isLookupOpen} onClose={closeLookup} />{" "}
-      {/* <-- added */}
+      {}
+      <PatientLookup isOpen={isLookupOpen} onClose={closeLookup} /> {}
     </Flex>
   );
 };

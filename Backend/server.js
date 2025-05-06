@@ -86,7 +86,7 @@ app.post("/api/loginAdmin", (req, res) => {
 });
 
 // =============================
-// 🔹 API: Fetch Today's Appointments
+//  API: Fetch Today's Appointments
 // =============================
 app.get("/api/todays-appointments", (req, res) => {
   const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
@@ -145,7 +145,7 @@ app.get("/api/patients", (req, res) => {
 /////////////////////////
 
 // =============================
-// 🔹 Create New Appointment
+//  Create New Appointment
 // =============================
 app.post("/api/appointments", (req, res) => {
   const { patient_id, doctor_id, date, time } = req.body;
@@ -374,7 +374,7 @@ app.get("/api/getPatient/:id", (req, res) => {
   })
 })
 // =============================
-// 🔹 Forgot Password API
+//  Forgot Password API
 // =============================
 
 const crypto = require("crypto");
@@ -447,7 +447,7 @@ db.query(insertQuery, [email, token, expiresAt, token, expiresAt], async (err) =
 // -----------------------------------------------------------------------------------
 
 // =============================
-// 🔹 Reset Password API
+//  Reset Password API
 // =============================
 
 app.post("/api/reset-password", async (req, res) => {
@@ -500,7 +500,7 @@ app.post("/api/reset-password", async (req, res) => {
 // -----------------------------------------------------------------------------------
 
 // =============================
-// 🔹 Add User API
+//  Add User API
 // =============================
 
 app.post("/api/add-user", async (req, res) => {
@@ -532,7 +532,7 @@ app.post("/api/add-user", async (req, res) => {
 
 // -----------------------------------------------------------------------------------
 
-// 🔹 Get All User Data API
+//  Get All User Data API
 // =============================
 
 app.get('/api/users', (req, res) => {
@@ -549,7 +549,7 @@ app.get('/api/users', (req, res) => {
 // -----------------------------------------------------------------------------------
 
 // =============================
-// 🔹 Delete User API
+// Delete User API
 // =============================
 
 app.delete('/api/delete-user/:id', (req, res) => {
@@ -583,7 +583,7 @@ app.delete('/api/delete-user/:id', (req, res) => {
 // -----------------------------------------------------------------------------------
 
 // =============================
-// 🔹 Get Single User API
+//  Get Single User API
 // =============================
 app.get("/api/getUser/:id", (req, res) => {
   const userId = req.params.id;
@@ -606,7 +606,7 @@ app.get("/api/getUser/:id", (req, res) => {
 // -----------------------------------------------------------------------------------
 
 // =============================
-// 🔹 Update User API
+//  Update User API
 // =============================
 app.put("/api/update-user/:id", (req, res) => {
   const userId = req.params.id;
@@ -624,7 +624,7 @@ app.put("/api/update-user/:id", (req, res) => {
 });
 
 // =============================
-// 🔹 Patient Lookup API (Secure SQL)
+//  Patient Lookup API (Secure SQL)
 // =============================
 app.get("/api/patients", (req, res) => {
     const query = req.query.query || "";
