@@ -103,13 +103,31 @@ const RemoveUser: React.FC = () => {
   }, []);
 
   return (
-    <Flex height="100vh" width="100vw" bg="teal.600" align="center" justify="center">
+    <Flex
+      height="100vh"
+      width="100vw"
+      bg="teal.600"
+      align="center"
+      justify="center"
+    >
       {/* Back Button */}
-      <Button position="absolute" top="20px" left="20px" onClick={() => navigate(-1)}>
+      <Button
+        position="absolute"
+        top="20px"
+        left="20px"
+        onClick={() => navigate(-1)}
+      >
         <ArrowBackIcon boxSize={7} />
       </Button>
 
-      <Box bg="white" p={8} borderRadius="lg" width="100%" maxW="700px">
+      <Box
+        bg="white"
+        p={8}
+        borderRadius="lg"
+        width="100%"
+        maxW="700px"
+        color="gray.800"
+      >
         <Text fontSize="2xl" fontWeight="bold" color="teal.700" mb="4">
           Remove User
         </Text>
@@ -144,17 +162,16 @@ const RemoveUser: React.FC = () => {
                     <Td textAlign="center">{user.email}</Td>
                     <Td textAlign="center">{user.role}</Td>
                     <Td textAlign="center">
-                {user.role.toLowerCase() !== "admin" && (
-                <Button
-                colorScheme="red"
-                size="sm"
-                onClick={() => openDeleteDialog(user.user_id)}
-                >
-                Delete
-                </Button>
-                )}
-                </Td>
-
+                      {user.role.toLowerCase() !== "admin" && (
+                        <Button
+                          colorScheme="red"
+                          size="sm"
+                          onClick={() => openDeleteDialog(user.user_id)}
+                        >
+                          Delete
+                        </Button>
+                      )}
+                    </Td>
                   </Tr>
                 ))}
               </Tbody>
@@ -174,7 +191,8 @@ const RemoveUser: React.FC = () => {
                 Delete User
               </AlertDialogHeader>
               <AlertDialogBody>
-                Are you sure you want to delete this user? This action cannot be undone.
+                Are you sure you want to delete this user? This action cannot be
+                undone.
               </AlertDialogBody>
               <AlertDialogFooter>
                 <Button ref={cancelRef} onClick={() => setIsDialogOpen(false)}>

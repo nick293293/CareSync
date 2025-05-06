@@ -41,7 +41,7 @@ const AdminLogin = () => {
         console.log("API Response:", response.data);
 
         if (response.data.success) {
-          // Navigate to StaffPage on successful login
+          localStorage.setItem("token", "true");
           navigate("/adminPage");
         }
       })

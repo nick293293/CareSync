@@ -51,13 +51,31 @@ const EditUserList: React.FC = () => {
   }, []);
 
   return (
-    <Flex height="100vh" width="100vw" bg="teal.600" align="center" justify="center">
+    <Flex
+      height="100vh"
+      width="100vw"
+      bg="teal.600"
+      align="center"
+      justify="center"
+    >
       {/* Back Button */}
-      <Button position="absolute" top="20px" left="20px" onClick={() => navigate(-1)}>
+      <Button
+        position="absolute"
+        top="20px"
+        left="20px"
+        onClick={() => navigate(-1)}
+      >
         <ArrowBackIcon boxSize={7} />
       </Button>
 
-      <Box bg="white" p={8} borderRadius="lg" width="100%" maxW="700px">
+      <Box
+        bg="white"
+        p={8}
+        borderRadius="lg"
+        width="100%"
+        maxW="700px"
+        color="gray.800"
+      >
         <Text fontSize="2xl" fontWeight="bold" color="teal.700" mb="4">
           Edit User Details
         </Text>
@@ -67,7 +85,12 @@ const EditUserList: React.FC = () => {
             <Spinner size="lg" />
           </Flex>
         ) : (
-          <Box maxH="400px" overflowY="auto" border="1px solid #E2E8F0" borderRadius="md">
+          <Box
+            maxH="400px"
+            overflowY="auto"
+            border="1px solid #E2E8F0"
+            borderRadius="md"
+          >
             <Table variant="simple" size="sm">
               <Thead position="sticky" top={0} bg="gray.100" zIndex={1}>
                 <Tr>

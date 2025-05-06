@@ -37,7 +37,7 @@ const StaffLogin = () => {
         console.log("API Response:", response.data);
 
         if (response.data.success) {
-          // Navigate to StaffPage on successful loginn
+          localStorage.setItem("token", "true");
           navigate("/staff");
         }
       })
@@ -194,8 +194,13 @@ const StaffLogin = () => {
           )}
 
           {/* Forgot Password Button */}
-          <Button marginY="25px" colorScheme="blue" size="md" width="100%" onClick={handleForgot}>
-            
+          <Button
+            marginY="25px"
+            colorScheme="blue"
+            size="md"
+            width="100%"
+            onClick={handleForgot}
+          >
             Forgot Password?
           </Button>
         </Box>

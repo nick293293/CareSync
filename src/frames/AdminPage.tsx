@@ -17,7 +17,8 @@ const AdminPage = () => {
   const cardBg = useColorModeValue("gray.100", "gray.700");
 
   const handleLogout = () => {
-    navigate("/adminLogin");
+    localStorage.removeItem("token");
+    navigate("/adminLogin"); // Goes to the admin login page
   };
 
   return (

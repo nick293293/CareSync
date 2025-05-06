@@ -129,10 +129,206 @@ app.get("/api/appointments", (req, res) => {
     res.json({ success: true, data: results });
   });
 });
+//Fetching Patient Info
+
+// GET all patients
+app.get("/api/patients", (req, res) => {
+  const query = "SELECT patient_id, name, dob, phone_number, email FROM patients";
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Error fetching patients:", err);
+      return res.status(500).json({ success: false, message: "Database error" });
+    }
+
+    res.json({ success: true, data: results });
+  });
+});
+/////////////////////////
+
+// =============================
+// 🔹 Create New Appointment
+// =============================
+app.post("/api/appointments", (req, res) => {
+  const { patient_id, doctor_id, date, time } = req.body;
+
+  if (!patient_id || !doctor_id || !date || !time) {
+    return res.status(400).json({ success: false, message: "All fields are required." });
+  }
+
+  function isWeekday(dateStr) {
+    const [year, month, day] = dateStr.split("-").map(Number);
+    const localDate = new Date(year, month - 1, day);
+    const dayOfWeek = localDate.getDay();
+    return dayOfWeek !== 0 && dayOfWeek !== 6;
+  }
+
+  function isWithinWorkingHours(timeStr) {
+    const [hours, minutes] = timeStr.split(":").map(Number);
+    const totalMinutes = hours * 60 + minutes;
+    return totalMinutes >= 480 && totalMinutes <= 1020;
+  }
+
+  if (!isWeekday(date)) {
+    return res.status(400).json({ success: false, message: "Appointments must be scheduled Monday to Friday." });
+  }
+
+  if (!isWithinWorkingHours(time)) {
+    return res.status(400).json({ success: false, message: "Appointments must be between 8:00 AM and 5:00 PM." });
+  }
+
+  const checkQuery = `
+    SELECT appointment_id FROM appointments 
+    WHERE doctor_id = ? 
+      AND date = ? 
+      AND (
+        TIME_TO_SEC(time) BETWEEN TIME_TO_SEC(?) - 1800 AND TIME_TO_SEC(?) + 1800
+      )
+  `;
+
+  db.query(checkQuery, [doctor_id, date, time, time], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ success: false, message: "An unexpected error occurred while making an appointment." });
+    }
+
+    if (results.length > 0) {
+      return res.status(400).json({ success: false, message: "Doctor already has another appointment around this time." });
+    }
+
+    const insertQuery = `
+      INSERT INTO appointments (patient_id, doctor_id, date, time, status)
+      VALUES (?, ?, ?, ?, 'Scheduled')
+    `;
+
+    db.query(insertQuery, [patient_id, doctor_id, date, time], (err, result) => {
+      if (err) {
+        console.error("Insert error:", err);
+        return res.status(500).json({ success: false, message: "An unexpected error occurred while making an appointment." });
+      }
+
+      return res.json({ success: true, message: "Appointment added successfully.", appointment_id: result.insertId });
+    });
+  });
+});
+
+
 
 
 /////////////////////////////////////
 
+// DELETE API Endpoint
+app.delete("/api/appointments/:id", (req, res) => {
+  const appointmentId = req.params.id;
+
+  const query = "DELETE FROM appointments WHERE appointment_id = ?";
+  db.query(query, [appointmentId], (err, result) => {
+    if (err) {
+      console.error("Error deleting appointment:", err);
+      return res.status(500).json({ success: false, message: "Database error" });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: "Appointment not found" });
+    }
+
+    res.json({ success: true, message: "Appointment deleted successfully" });
+  });
+});
+
+
+//Edit appointment
+
+app.put("/api/appointments/:id", (req, res) => {
+  console.log("PUT /api/appointments/:id route was called");
+  const appointmentId = req.params.id;
+  const { doctor_id, date, time } = req.body;
+
+  if (!doctor_id || !date || !time) {
+    return res.status(400).json({ success: false, message: "All fields are required." });
+  }
+
+  function isWeekday(dateStr) {
+    const [year, month, day] = dateStr.split("-").map(Number);
+    const localDate = new Date(year, month - 1, day);
+    const dayOfWeek = localDate.getDay();
+    return dayOfWeek !== 0 && dayOfWeek !== 6;
+  }
+
+  function isWithinWorkingHours(timeStr) {
+    const [hours, minutes] = timeStr.split(":").map(Number);
+    const totalMinutes = hours * 60 + minutes;
+    return totalMinutes >= 480 && totalMinutes <= 1020;
+  }
+
+  if (!isWeekday(date)) {
+    return res.status(400).json({ success: false, message: "Appointments must be scheduled Monday to Friday." });
+  }
+
+  if (!isWithinWorkingHours(time)) {
+    return res.status(400).json({ success: false, message: "Appointments must be between 8:00 AM and 5:00 PM." });
+  }
+
+  const checkQuery = `
+    SELECT appointment_id FROM appointments 
+    WHERE doctor_id = ? 
+      AND date = ? 
+      AND appointment_id != ? 
+      AND (
+        TIME_TO_SEC(time) BETWEEN TIME_TO_SEC(?) - 1800 AND TIME_TO_SEC(?) + 1800
+      )
+  `;
+
+  db.query(checkQuery, [doctor_id, date, appointmentId, time, time], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ success: false, message: "Failed to update appointment." });
+    }
+
+    if (results.length > 0) {
+      return res.status(400).json({ success: false, message: "Doctor already has another appointment around this time." });
+    }
+
+    const updateQuery = `
+      UPDATE appointments 
+      SET doctor_id = ?, date = ?, time = ? 
+      WHERE appointment_id = ?
+    `;
+
+    db.query(updateQuery, [doctor_id, date, time, appointmentId], (err, result) => {
+      if (err) {
+        console.error("Update error:", err);
+        return res.status(500).json({ success: false, message: "Failed to update appointment." });
+      }
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ success: false, message: "Appointment not found." });
+      }
+
+      res.json({ success: true, message: "Appointment updated successfully." });
+    });
+  });
+});
+
+
+
+app.get("/api/doctors", (req, res) => {
+  const query = "SELECT user_id, username FROM users WHERE role = 'doctor'";
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Error fetching doctors:", err);
+      return res.status(500).json({ success: false, message: "Database error" });
+    }
+
+    res.json({ success: true, data: results });
+  });
+});
+
+
+
+
+/////////////////
 // -----------------------------------------------------------------------------------
 // Email functionality
 app.post("/api/send-email", async (req, res) => {
