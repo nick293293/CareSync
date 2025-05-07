@@ -136,7 +136,7 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
     if (!patientToRemove) return;
     try {
       await axios.delete(
-        `https://caresync-psh6.onrender.com/api/patients/${patientId}`,
+        `https://caresync-psh6.onrender.com/api/patients/${patientToRemove.patient_id}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -169,7 +169,7 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
 
   // Preview PDF Medical Report
   const handlePreviewPDF = (patientId: number) => {
-    const url = `http://localhost:5000/api/reports/${patientId}/pdf`;
+    const url = `https://caresync-psh6.onrender.com/api/reports/${patientId}/pdf`;
     setPdfUrl(url);
     setPdfModalOpen(true);
   };

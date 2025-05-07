@@ -402,7 +402,8 @@ db.query(insertQuery, [email, token, expiresAt, token, expiresAt], async (err) =
   }
 
       // Send password reset email
-      const resetLink = `http://localhost:5173/reset-password/${token}`;
+      const resetLink = `https://caresync-psh6.onrender.com/reset-password/${token}`;
+      //http://localhost:5173
       const transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
         port: 465,
