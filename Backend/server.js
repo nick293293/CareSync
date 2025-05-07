@@ -579,84 +579,98 @@ const PDFDocument = require("pdfkit");
 app.get("/api/reports/:patientId/pdf", (req, res) => {
   const { patientId } = req.params;
 
-  const sql = "SELECT * FROM medicalrecords WHERE patient_id = ?";
-  db.query(sql, [patientId], (err, records) => {
-    if (err) {
-      console.error("Error fetching records:", err);
-      return res.status(500).send("Error generating report");
+  const patientSql = "SELECT * FROM patients WHERE patient_id = ?";
+  const recordSql = "SELECT * FROM medicalrecords WHERE patient_id = ?";
+
+  db.query(patientSql, [patientId], (err, patientResult) => {
+    if (err || patientResult.length === 0) {
+      console.error("Error fetching patient:", err);
+      return res.status(404).send("Patient not found");
     }
 
-    const doc = new PDFDocument();
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", "inline");
-    doc.pipe(res);
+    const patient = patientResult[0];
 
-    if (records.length === 0) {
-      doc.fontSize(16).text("No medical records found for this patient.");
+    db.query(recordSql, [patientId], (err, recordResult) => {
+      if (err) {
+        console.error("Error fetching records:", err);
+        return res.status(500).send("Error generating report");
+      }
+
+      const doc = new PDFDocument();
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `inline; filename="Medical_Report_${patientId}.pdf"`);
+      doc.pipe(res);
+
+      // Patient Info
+      doc.fontSize(20).text(`Medical Report`, { underline: true });
+      doc.moveDown();
+      doc.fontSize(14).text(`Name: ${patient.name}`);
+      doc.text(`DOB: ${new Date(patient.dob).toLocaleDateString()}`);
+      doc.text(`Address: ${patient.address}`);
+      doc.text(`Phone: ${patient.phone_number}`);
+      doc.text(`Email: ${patient.email}`);
+      doc.moveDown();
+
+      if (recordResult.length === 0) {
+        doc.fontSize(12).text("No medical records available for this patient.");
+      } else {
+        recordResult.forEach((record, index) => {
+          doc.fontSize(14).text(`Record #${index + 1}`);
+          doc.text(`Doctor ID: ${record.doctor_id}`);
+          doc.text(`Diagnosis: ${record.diagnosis}`);
+          doc.text(`Treatment: ${record.treatment}`);
+          doc.moveDown();
+
+          doc.text("Medications:");
+          doc.text("• Albuterol (2 puffs every 4 hours)");
+          doc.text("• Lisinopril (10mg daily)");
+          doc.text("• Metformin (500mg twice daily)");
+          doc.text("• Simvastatin (20mg at bedtime)");
+          doc.text("• Omeprazole (40mg before breakfast)");
+          doc.text("• Ibuprofen (400mg as needed)");
+          doc.moveDown();
+
+          doc.text("Vitals:");
+          doc.text("• Blood Pressure: 130/85 mmHg");
+          doc.text("• Heart Rate: 78 bpm");
+          doc.text("• Temperature: 98.7°F");
+          doc.text("• Oxygen Saturation: 97%");
+          doc.text("• Respiratory Rate: 18 breaths/min");
+          doc.text("• Weight: 180 lbs");
+          doc.text("• Height: 5'11\"");
+          doc.moveDown();
+
+          doc.text("Lab Results:");
+          for (let i = 1; i <= 10; i++) {
+            doc.text(`• Lab Panel ${i}: All results within expected range.`);
+          }
+          doc.moveDown();
+
+          doc.text("Lifestyle Notes:");
+          doc.text("Patient advised to maintain a low-sodium, low-carb diet. Engage in 30 minutes of aerobic activity daily. Limit alcohol intake. Avoid tobacco. Maintain a sleep schedule. Practice mindfulness or stress reduction exercises.");
+          doc.moveDown();
+
+          doc.text("Doctor Notes:");
+          doc.text("Patient presents with signs of improving hypertension. Recommend continued monitoring. No signs of infection or abnormal pathology noted during physical examination. Advised on vaccine updates and medication adherence.");
+          doc.moveDown();
+
+          doc.text("Additional Observations:");
+          for (let i = 0; i < 10; i++) {
+            doc.text(`• Observation ${i + 1}: No adverse symptoms reported.`);
+          }
+          doc.moveDown();
+
+          doc.text("Follow-up:");
+          doc.text("Patient scheduled for follow-up in 2 weeks. Routine labs to be performed 2 days prior to visit. Monitor symptoms and contact clinic if conditions worsen.");
+
+          doc.addPage();
+        });
+      }
+
       doc.end();
-      return;
-    }
-  
-    doc.fontSize(20).text(`Medical Report for Patient ID: ${patientId}`, { underline: true });
-    doc.moveDown();
-
-    records.forEach((record, index) => {
-      doc.fontSize(14).text(`Record #${index + 1}`);
-      doc.text(`Doctor ID: ${record.doctor_id}`);
-      doc.text(`Diagnosis: ${record.diagnosis}`);
-      doc.text(`Treatment: ${record.treatment}`);
-      doc.moveDown();
-    
-      doc.text("Medications:");
-      doc.text("• Albuterol (2 puffs every 4 hours)");
-      doc.text("• Lisinopril (10mg daily)");
-      doc.text("• Metformin (500mg twice daily)");
-      doc.text("• Simvastatin (20mg at bedtime)");
-      doc.text("• Omeprazole (40mg before breakfast)");
-      doc.text("• Ibuprofen (400mg as needed)");
-      doc.moveDown();
-    
-      doc.text("Vitals:");
-      doc.text("• Blood Pressure: 130/85 mmHg");
-      doc.text("• Heart Rate: 78 bpm");
-      doc.text("• Temperature: 98.7°F");
-      doc.text("• Oxygen Saturation: 97%");
-      doc.text("• Respiratory Rate: 18 breaths/min");
-      doc.text("• Weight: 180 lbs");
-      doc.text("• Height: 5'11\"");
-      doc.moveDown();
-    
-      doc.text("Lab Results:");
-      for (let i = 1; i <= 10; i++) {
-        doc.text(`• Lab Panel ${i}: All results within expected range.`);
-      }
-      doc.moveDown();
-    
-      doc.text("Lifestyle Notes:");
-      doc.text("Patient advised to maintain a low-sodium, low-carb diet. Engage in 30 minutes of aerobic activity daily. Limit alcohol intake. Avoid tobacco. Maintain a sleep schedule. Practice mindfulness or stress reduction exercises.");
-      doc.moveDown();
-    
-      doc.text("Doctor Notes:");
-      doc.text("Patient presents with signs of improving hypertension. Recommend continued monitoring. No signs of infection or abnormal pathology noted during physical examination. Advised on vaccine updates and medication adherence.");
-      doc.moveDown();
-    
-      doc.text("Additional Observations:");
-      for (let i = 0; i < 10; i++) {
-        doc.text(`• Observation ${i + 1}: No adverse symptoms reported.`);
-      }
-      doc.moveDown();
-    
-      doc.text("Follow-up:");
-      doc.text("Patient scheduled for follow-up in 2 weeks. Routine labs to be performed 2 days prior to visit. Monitor symptoms and contact clinic if conditions worsen.");
-      doc.addPage(); // Force new page for each record
     });
-    
-    
-
-    doc.end();
   });
 });
-
 
 const PORT = 5000; // Backend port
 app.listen(PORT, () => {
