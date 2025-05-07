@@ -13,6 +13,8 @@ import {
   ModalBody,
   ModalCloseButton,
   useToast,
+  useDisclosure,
+  ModalFooter,
 } from "@chakra-ui/react";
 
 interface PatientLookupProps {
@@ -42,7 +44,18 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
     email: "",
   });
 
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [isPdfModalOpen, setPdfModalOpen] = useState(false);
+
   const toast = useToast();
+
+  // Confirmation modal for patient removal
+  const {
+    isOpen: isConfirmOpen,
+    onOpen: onConfirmOpen,
+    onClose: onConfirmClose,
+  } = useDisclosure();
+  const [patientToRemove, setPatientToRemove] = useState<Patient | null>(null);
 
   // Search Patients
   const searchPatients = async () => {
@@ -112,8 +125,15 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
     }
   };
 
+  // Confirm and then remove patient
+  const confirmRemovePatient = (patient: Patient) => {
+    setPatientToRemove(patient);
+    onConfirmOpen();
+  };
+
   // Remove Patient
-  const removePatient = async (patientId: number) => {
+  const removePatient = async () => {
+    if (!patientToRemove) return;
     try {
       await axios.delete(
         `https://caresync-psh6.onrender.com/api/patients/${patientId}`,
@@ -133,6 +153,9 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
     } catch (err: any) {
       console.error("Error removing patient:", err);
       setError("Error removing patient");
+    } finally {
+      onConfirmClose();
+      setPatientToRemove(null);
     }
   };
 
@@ -144,118 +167,186 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
     );
   };
 
+  // Preview PDF Medical Report
+  const handlePreviewPDF = (patientId: number) => {
+    const url = `http://localhost:5000/api/reports/${patientId}/pdf`;
+    setPdfUrl(url);
+    setPdfModalOpen(true);
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Look Up Patient</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <Input
-            placeholder="Enter Patient Name or ID"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            mb={3}
-          />
-          <Button colorScheme="blue" onClick={searchPatients}>
-            Search
-          </Button>
+    <>
+      {/* Patient Lookup Modal */}
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Look Up Patient</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Input
+              placeholder="Enter Patient Name or ID"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              mb={3}
+            />
+            <Button colorScheme="blue" onClick={searchPatients}>
+              Search
+            </Button>
 
-          {error && (
-            <Text color="red.500" mt={3}>
-              {error}
+            {error && (
+              <Text color="red.500" mt={3}>
+                {error}
+              </Text>
+            )}
+
+            <VStack mt={4} spacing={3} align="start">
+              {patients.map((patient) => (
+                <Box
+                  key={patient.patient_id}
+                  p={3}
+                  borderWidth="1px"
+                  borderRadius="md"
+                >
+                  <Text fontWeight="bold">{patient.name}</Text>
+                  <Text>ID: {patient.patient_id}</Text>
+                  <Text>
+                    Date of Birth: {new Date(patient.dob).toLocaleDateString()}
+                  </Text>
+                  <Text>Address: {patient.address}</Text>
+                  <Text>Phone: {patient.phone_number}</Text>
+                  <Text>Email: {patient.email}</Text>
+
+                  <Button
+                    colorScheme="red"
+                    size="sm"
+                    mt={2}
+                    onClick={() => confirmRemovePatient(patient)}
+                  >
+                    Remove Patient
+                  </Button>
+                  <Button
+                    colorScheme="teal"
+                    size="sm"
+                    mt={2}
+                    ml={2}
+                    onClick={() => handlePreviewPDF(patient.patient_id)}
+                  >
+                    Preview PDF
+                  </Button>
+                  <Button
+                    colorScheme="blue"
+                    size="sm"
+                    mt={2}
+                    ml={2}
+                    onClick={() => handleDownloadPDF(patient.patient_id)}
+                  >
+                    Download PDF
+                  </Button>
+                </Box>
+              ))}
+            </VStack>
+
+            {/* Add Patient Section */}
+            <Text fontWeight="bold" mt={5}>
+              Add New Patient
             </Text>
-          )}
+            <Input
+              placeholder="Name"
+              value={newPatient.name}
+              onChange={(e) =>
+                setNewPatient({ ...newPatient, name: e.target.value })
+              }
+              mb={2}
+            />
+            <Input
+              placeholder="Date of Birth"
+              type="date"
+              value={newPatient.dob}
+              onChange={(e) =>
+                setNewPatient({ ...newPatient, dob: e.target.value })
+              }
+              mb={2}
+            />
+            <Input
+              placeholder="Address"
+              value={newPatient.address}
+              onChange={(e) =>
+                setNewPatient({ ...newPatient, address: e.target.value })
+              }
+              mb={2}
+            />
+            <Input
+              placeholder="Phone"
+              value={newPatient.phone_number}
+              onChange={(e) =>
+                setNewPatient({ ...newPatient, phone_number: e.target.value })
+              }
+              mb={2}
+            />
+            <Input
+              placeholder="Email"
+              type="email"
+              value={newPatient.email}
+              onChange={(e) =>
+                setNewPatient({ ...newPatient, email: e.target.value })
+              }
+              mb={2}
+            />
+            <Button colorScheme="green" onClick={addPatient} mt={2}>
+              Add Patient
+            </Button>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
 
-          <VStack mt={4} spacing={3} align="start">
-            {patients.map((patient) => (
-              <Box
-                key={patient.patient_id}
-                p={3}
-                borderWidth="1px"
-                borderRadius="md"
-              >
-                <Text fontWeight="bold">{patient.name}</Text>
-                <Text>ID: {patient.patient_id}</Text>
-                <Text>
-                  Date of Birth: {new Date(patient.dob).toLocaleDateString()}
-                </Text>
-                <Text>Address: {patient.address}</Text>
-                <Text>Phone: {patient.phone_number}</Text>
-                <Text>Email: {patient.email}</Text>
+      {/* PDF Preview Modal */}
+      <Modal
+        isOpen={isPdfModalOpen}
+        onClose={() => setPdfModalOpen(false)}
+        size="4xl"
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Preview PDF Report</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {pdfUrl ? (
+              <iframe
+                src={pdfUrl}
+                title="PDF Preview"
+                width="100%"
+                height="600px"
+              />
+            ) : (
+              <Text>No PDF available</Text>
+            )}
+          </ModalBody>
+        </ModalContent>
+      </Modal>
 
-                <Button
-                  colorScheme="red"
-                  size="sm"
-                  mt={2}
-                  onClick={() => removePatient(patient.patient_id)}
-                >
-                  Remove Patient
-                </Button>
-                <Button
-                  colorScheme="blue"
-                  size="sm"
-                  mt={2}
-                  onClick={() => handleDownloadPDF(patient.patient_id)}
-                >
-                  Download PDF Report
-                </Button>
-              </Box>
-            ))}
-          </VStack>
-
-          {/* Add Patient Section */}
-          <Text fontWeight="bold" mt={5}>
-            Add New Patient
-          </Text>
-          <Input
-            placeholder="Name"
-            value={newPatient.name}
-            onChange={(e) =>
-              setNewPatient({ ...newPatient, name: e.target.value })
-            }
-            mb={2}
-          />
-          <Input
-            placeholder="Date of Birth"
-            type="date"
-            value={newPatient.dob}
-            onChange={(e) =>
-              setNewPatient({ ...newPatient, dob: e.target.value })
-            }
-            mb={2}
-          />
-          <Input
-            placeholder="Address"
-            value={newPatient.address}
-            onChange={(e) =>
-              setNewPatient({ ...newPatient, address: e.target.value })
-            }
-            mb={2}
-          />
-          <Input
-            placeholder="Phone"
-            value={newPatient.phone_number}
-            onChange={(e) =>
-              setNewPatient({ ...newPatient, phone_number: e.target.value })
-            }
-            mb={2}
-          />
-          <Input
-            placeholder="Email"
-            type="email"
-            value={newPatient.email}
-            onChange={(e) =>
-              setNewPatient({ ...newPatient, email: e.target.value })
-            }
-            mb={2}
-          />
-          <Button colorScheme="green" onClick={addPatient} mt={2}>
-            Add Patient
-          </Button>
-        </ModalBody>
-      </ModalContent>
-    </Modal>
+      {/* Confirm Remove Modal */}
+      <Modal isOpen={isConfirmOpen} onClose={onConfirmClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Confirm Deletion</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text>
+              Are you sure you want to remove{" "}
+              <strong>{patientToRemove?.name}</strong>?
+            </Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={onConfirmClose}>
+              Cancel
+            </Button>
+            <Button colorScheme="red" onClick={removePatient}>
+              Remove
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
   );
 };
 

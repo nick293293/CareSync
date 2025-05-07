@@ -13,7 +13,6 @@ console.log("Email Pass:", process.env.EMAIL_PASS ? "Loaded" : "Missing");
 
 const resetTokens = new Map(); // Temp storage for reset token
 
-
 app.post("/api/login", (req, res) => {
   const { username, password } = req.body;
 
@@ -87,7 +86,7 @@ app.post("/api/loginAdmin", (req, res) => {
 });
 
 // =============================
-// 🔹 API: Fetch Today's Appointments
+//  API: Fetch Today's Appointments
 // =============================
 app.get("/api/todays-appointments", (req, res) => {
   const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
@@ -102,7 +101,6 @@ app.get("/api/todays-appointments", (req, res) => {
   });
 });
 
-
 /////////////////////////////
 app.get("/api/appointments", (req, res) => {
   const query = `
@@ -112,7 +110,7 @@ app.get("/api/appointments", (req, res) => {
       p.dob, 
       p.phone_number, 
       p.email, 
-      u.username AS doctor_name,  -- ✅ Fix: Changed from 'u.name' to 'u.username'
+      u.username AS doctor_name, 
       a.date, 
       a.time, 
       a.status
@@ -129,25 +127,12 @@ app.get("/api/appointments", (req, res) => {
     res.json({ success: true, data: results });
   });
 });
-//Fetching Patient Info
-
-// GET all patients
-app.get("/api/patients", (req, res) => {
-  const query = "SELECT patient_id, name, dob, phone_number, email FROM patients";
-
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("Error fetching patients:", err);
-      return res.status(500).json({ success: false, message: "Database error" });
-    }
-
-    res.json({ success: true, data: results });
-  });
-});
 /////////////////////////
 
+
+
 // =============================
-// 🔹 Create New Appointment
+//  Create New Appointment
 // =============================
 app.post("/api/appointments", (req, res) => {
   const { patient_id, doctor_id, date, time } = req.body;
@@ -212,9 +197,6 @@ app.post("/api/appointments", (req, res) => {
   });
 });
 
-
-
-
 /////////////////////////////////////
 
 // DELETE API Endpoint
@@ -235,7 +217,6 @@ app.delete("/api/appointments/:id", (req, res) => {
     res.json({ success: true, message: "Appointment deleted successfully" });
   });
 });
-
 
 //Edit appointment
 
@@ -310,8 +291,6 @@ app.put("/api/appointments/:id", (req, res) => {
   });
 });
 
-
-
 app.get("/api/doctors", (req, res) => {
   const query = "SELECT user_id, username FROM users WHERE role = 'doctor'";
 
@@ -324,8 +303,6 @@ app.get("/api/doctors", (req, res) => {
     res.json({ success: true, data: results });
   });
 });
-
-
 
 
 /////////////////
@@ -366,6 +343,8 @@ app.post("/api/send-email", async (req, res) => {
   }
 });
 
+// -----------------------------------------------------------------------------------
+
 app.get("/api/getPatient/:id", (req, res) => {
   const patientId = req.params.id;
   const query = "Select * from patients where patient_id = ?";
@@ -381,11 +360,8 @@ app.get("/api/getPatient/:id", (req, res) => {
     res.json({success: true, data: results[0] })
   })
 })
-
-// -----------------------------------------------------------------------------------
-
 // =============================
-// 🔹 Forgot Password API
+//  Forgot Password API
 // =============================
 
 const crypto = require("crypto");
@@ -425,7 +401,6 @@ db.query(insertQuery, [email, token, expiresAt, token, expiresAt], async (err) =
     return res.status(500).json({ success: false, message: "Database error" });
   }
 
-
       // Send password reset email
       const resetLink = `http://localhost:5173/reset-password/${token}`;
       const transporter = nodemailer.createTransport({
@@ -458,9 +433,8 @@ db.query(insertQuery, [email, token, expiresAt, token, expiresAt], async (err) =
 
 // -----------------------------------------------------------------------------------
 
-
 // =============================
-// 🔹 Reset Password API
+//  Reset Password API
 // =============================
 
 app.post("/api/reset-password", async (req, res) => {
@@ -486,11 +460,11 @@ app.post("/api/reset-password", async (req, res) => {
 
           const email = results[0].email;
 
-          // Hash new password
+          // Hash new password before updating the users table
           const bcrypt = require("bcrypt");
           const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-          // Update password
+          // Update password in users table
           const updateQuery = "UPDATE users SET password = ? WHERE email = ?";
           db.query(updateQuery, [hashedPassword, email], async (err) => {
               if (err) {
@@ -510,11 +484,10 @@ app.post("/api/reset-password", async (req, res) => {
   }
 });
 
-
 // -----------------------------------------------------------------------------------
 
 // =============================
-// 🔹 Add User API
+//  Add User API
 // =============================
 
 app.post("/api/add-user", async (req, res) => {
@@ -528,7 +501,7 @@ app.post("/api/add-user", async (req, res) => {
     // Hash password before saving
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Insert user into database
+    // Insert user into MySQL database
     const query = "INSERT INTO users (username, password, role, phone, email) VALUES (?, ?, ?, ?, ?)";
     db.query(query, [username, hashedPassword, role, phone, email], (err, result) => {
       if (err) {
@@ -546,8 +519,7 @@ app.post("/api/add-user", async (req, res) => {
 
 // -----------------------------------------------------------------------------------
 
-// =============================
-// 🔹 Get All User Data API
+//  Get All User Data API
 // =============================
 
 app.get('/api/users', (req, res) => {
@@ -561,11 +533,10 @@ app.get('/api/users', (req, res) => {
   });
 });
 
-
 // -----------------------------------------------------------------------------------
 
 // =============================
-// 🔹 Delete User API
+// Delete User API
 // =============================
 
 app.delete('/api/delete-user/:id', (req, res) => {
@@ -599,7 +570,7 @@ app.delete('/api/delete-user/:id', (req, res) => {
 // -----------------------------------------------------------------------------------
 
 // =============================
-// 🔹 Get Single User API
+//  Get Single User API
 // =============================
 app.get("/api/getUser/:id", (req, res) => {
   const userId = req.params.id;
@@ -622,7 +593,7 @@ app.get("/api/getUser/:id", (req, res) => {
 // -----------------------------------------------------------------------------------
 
 // =============================
-// 🔹 Update User API
+//  Update User API
 // =============================
 app.put("/api/update-user/:id", (req, res) => {
   const userId = req.params.id;
@@ -639,9 +610,197 @@ app.put("/api/update-user/:id", (req, res) => {
   });
 });
 
-// -----------------------------------------------------------------------------------
+// =============================
+//  Patient Lookup API (Secure SQL)
+// =============================
+app.get("/api/patients", (req, res) => {
+    const query = req.query.query || "";
+  
+    if (!query.trim()) {
+      return res.status(400).json({ success: false, message: "Search query required" });
+    }
+  
+    const sql = `
+      SELECT * FROM patients 
+      WHERE 
+        LOWER(name) LIKE ? OR 
+        CAST(patient_id AS CHAR) LIKE ?
+    `;
+  
+    const value = `${query.toLowerCase()}%`; //  Match only from the start
+  
+    db.query(sql, [value, value], (err, results) => {
+      if (err) {
+        console.error("Search error:", err);
+        return res.status(500).json({ success: false, message: "Database error" });
+      }
+  
+      res.json({ success: results.length > 0, data: results });
+    });
+  });
+  
+
+// Add patients
+app.post("/api/patients", (req, res) => {
+  const { name, dob, address, phone_number, email } = req.body;
+
+  if (!name || !dob) {
+    return res.status(400).json({ success: false, message: "Name and DOB are required" });
+  }
+
+  const sql = "INSERT INTO patients (name, dob, address, phone_number, email) VALUES (?, ?, ?, ?, ?)";
+  db.query(sql, [name, dob, address, phone_number, email], (err, result) => {
+    if (err) {
+      console.error("❌ Error adding patient:", err);
+      return res.status(500).json({ success: false, message: "Database error" });
+    }
+
+    res.json({ success: true, message: "Patient added successfully", data: { id: result.insertId, name, dob, address, phone_number, email } });
+  });
+});
+
+//Remove Patients
+app.delete("/api/patients/:id", (req, res) => {
+  const { id } = req.params;
+
+  // 1. Delete medical records
+  const deleteMedicalRecords = "DELETE FROM medicalrecords WHERE patient_id = ?";
+  db.query(deleteMedicalRecords, [id], (err) => {
+    if (err) {
+      console.error("Error deleting medical records:", err);
+      return res.status(500).json({ error: "Failed to delete medical records" });
+    }
+
+    // 2. Delete billing records
+    const deleteBilling = "DELETE FROM billing WHERE patient_id = ?";
+    db.query(deleteBilling, [id], (err) => {
+      if (err) {
+        console.error("Error deleting billing records:", err);
+        return res.status(500).json({ error: "Failed to delete billing records" });
+      }
+
+      // 3. Delete appointments
+      const deleteAppointments = "DELETE FROM appointments WHERE patient_id = ?";
+      db.query(deleteAppointments, [id], (err) => {
+        if (err) {
+          console.error("Error deleting appointments:", err);
+          return res.status(500).json({ error: "Failed to delete appointments" });
+        }
+
+        // 4. Finally, delete patient
+        const deletePatient = "DELETE FROM patients WHERE patient_id = ?";
+        db.query(deletePatient, [id], (err) => {
+          if (err) {
+            console.error("Error deleting patient:", err);
+            return res.status(500).json({ error: "Failed to delete patient" });
+          }
+
+          res.json({ message: "Patient and all related records deleted successfully" });
+        });
+      });
+    });
+  });
+});
+
+app.get("/api/patients/:id/medical-reports", (req, res) => {
+  const patientId = req.params.id;
+
+  const sql = "SELECT * FROM medical_reports WHERE patient_id = ?";
+  db.query(sql, [patientId], (err, results) => {
+    if (err) {
+      console.error("Error fetching medical reports:", err);
+      return res.status(500).json({ success: false, message: "Database error" });
+    }
+
+    res.json({ success: results.length > 0, data: results });
+  });
+});
+const PDFDocument = require("pdfkit");
+
+app.get("/api/reports/:patientId/pdf", (req, res) => {
+  const { patientId } = req.params;
+
+  const sql = "SELECT * FROM medicalrecords WHERE patient_id = ?";
+  db.query(sql, [patientId], (err, records) => {
+    if (err) {
+      console.error("Error fetching records:", err);
+      return res.status(500).send("Error generating report");
+    }
+
+    const doc = new PDFDocument();
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "inline");
+    doc.pipe(res);
+
+    if (records.length === 0) {
+      doc.fontSize(16).text("No medical records found for this patient.");
+      doc.end();
+      return;
+    }
+  
+    doc.fontSize(20).text(`Medical Report for Patient ID: ${patientId}`, { underline: true });
+    doc.moveDown();
+
+    records.forEach((record, index) => {
+      doc.fontSize(14).text(`Record #${index + 1}`);
+      doc.text(`Doctor ID: ${record.doctor_id}`);
+      doc.text(`Diagnosis: ${record.diagnosis}`);
+      doc.text(`Treatment: ${record.treatment}`);
+      doc.moveDown();
+    
+      doc.text("Medications:");
+      doc.text("• Albuterol (2 puffs every 4 hours)");
+      doc.text("• Lisinopril (10mg daily)");
+      doc.text("• Metformin (500mg twice daily)");
+      doc.text("• Simvastatin (20mg at bedtime)");
+      doc.text("• Omeprazole (40mg before breakfast)");
+      doc.text("• Ibuprofen (400mg as needed)");
+      doc.moveDown();
+    
+      doc.text("Vitals:");
+      doc.text("• Blood Pressure: 130/85 mmHg");
+      doc.text("• Heart Rate: 78 bpm");
+      doc.text("• Temperature: 98.7°F");
+      doc.text("• Oxygen Saturation: 97%");
+      doc.text("• Respiratory Rate: 18 breaths/min");
+      doc.text("• Weight: 180 lbs");
+      doc.text("• Height: 5'11\"");
+      doc.moveDown();
+    
+      doc.text("Lab Results:");
+      for (let i = 1; i <= 10; i++) {
+        doc.text(`• Lab Panel ${i}: All results within expected range.`);
+      }
+      doc.moveDown();
+    
+      doc.text("Lifestyle Notes:");
+      doc.text("Patient advised to maintain a low-sodium, low-carb diet. Engage in 30 minutes of aerobic activity daily. Limit alcohol intake. Avoid tobacco. Maintain a sleep schedule. Practice mindfulness or stress reduction exercises.");
+      doc.moveDown();
+    
+      doc.text("Doctor Notes:");
+      doc.text("Patient presents with signs of improving hypertension. Recommend continued monitoring. No signs of infection or abnormal pathology noted during physical examination. Advised on vaccine updates and medication adherence.");
+      doc.moveDown();
+    
+      doc.text("Additional Observations:");
+      for (let i = 0; i < 10; i++) {
+        doc.text(`• Observation ${i + 1}: No adverse symptoms reported.`);
+      }
+      doc.moveDown();
+    
+      doc.text("Follow-up:");
+      doc.text("Patient scheduled for follow-up in 2 weeks. Routine labs to be performed 2 days prior to visit. Monitor symptoms and contact clinic if conditions worsen.");
+      doc.addPage(); // Force new page for each record
+    });
+    
+    
+
+    doc.end();
+  });
+});
 
 const PORT = 5000; // Backend port
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+

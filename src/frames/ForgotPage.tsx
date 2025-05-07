@@ -75,7 +75,7 @@ const ForgotPage = () => {
         height={{ base: "40%", md: "100%" }}
       >
         <Image
-          src="/doctor question.jpg"
+          src="/doctorQ.jpg"
           alt="Forgot Password Illustration"
           maxHeight={{ base: "60%", md: "80%" }}
           objectFit="contain"
