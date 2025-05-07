@@ -129,20 +129,7 @@ app.get("/api/appointments", (req, res) => {
 });
 /////////////////////////
 
-// GET all patients
-app.get("/api/patients", (req, res) => {
-  const query = "SELECT patient_id, name, dob, phone_number, email FROM patients";
 
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("Error fetching patients:", err);
-      return res.status(500).json({ success: false, message: "Database error" });
-    }
-
-    res.json({ success: true, data: results });
-  });
-});
-/////////////////////////
 
 // =============================
 //  Create New Appointment
