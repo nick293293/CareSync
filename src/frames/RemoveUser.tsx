@@ -42,7 +42,7 @@ const RemoveUser: React.FC = () => {
 
   const fetchUsers = () => {
     axios
-      .get("http://localhost:5000/api/users")
+      .get("https://caresync-psh6.onrender.com/api/users")
       .then((res) => {
         setUsers(res.data);
         setLoading(false);
@@ -69,7 +69,9 @@ const RemoveUser: React.FC = () => {
     if (selectedUserId === null) return;
 
     axios
-      .delete(`http://localhost:5000/api/delete-user/${selectedUserId}`)
+      .delete(
+        `https://caresync-psh6.onrender.com/api/delete-user/${selectedUserId}`
+      )
       .then(() => {
         toast({
           title: "User Removed",

@@ -68,7 +68,7 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
 
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/patients?query=${query}`
+        `https://caresync-psh6.onrender.com/api/patients?query=${query}`
       );
       if (response.data.success) {
         setPatients(response.data.data);
@@ -86,10 +86,13 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
   const addPatient = async () => {
     try {
       const formattedDob = new Date(newPatient.dob).toISOString().split("T")[0];
-      const response = await axios.post("http://localhost:5000/api/patients", {
-        ...newPatient,
-        dob: formattedDob,
-      });
+      const response = await axios.post(
+        "https://caresync-psh6.onrender.com/api/patients",
+        {
+          ...newPatient,
+          dob: formattedDob,
+        }
+      );
 
       if (response.data.success) {
         toast({
@@ -133,7 +136,7 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
     if (!patientToRemove) return;
     try {
       await axios.delete(
-        `http://localhost:5000/api/patients/${patientToRemove.patient_id}`,
+        `https://caresync-psh6.onrender.com/api/patients/${patientToRemove.patient_id}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -158,12 +161,15 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
 
   // Download PDF Medical Report
   const handleDownloadPDF = (patientId: number) => {
-    window.open(`http://localhost:5000/api/reports/${patientId}/pdf`, "_blank");
+    window.open(
+      `https://caresync-psh6.onrender.com/api/reports/${patientId}/pdf`,
+      "_blank"
+    );
   };
 
   // Preview PDF Medical Report
   const handlePreviewPDF = (patientId: number) => {
-    const url = `http://localhost:5000/api/reports/${patientId}/pdf`;
+    const url = `https://caresync-psh6.onrender.com/api/reports/${patientId}/pdf`;
     setPdfUrl(url);
     setPdfModalOpen(true);
   };

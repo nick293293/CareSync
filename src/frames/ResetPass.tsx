@@ -1,6 +1,14 @@
 import React, { useState } from "react";
-import { ArrowBackIcon } from "@chakra-ui/icons";
-import { Box, Button, Flex, FormControl, FormLabel, Input, Text, useToast } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  FormControl,
+  FormLabel,
+  Input,
+  Text,
+  useToast,
+} from "@chakra-ui/react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 
@@ -29,7 +37,13 @@ const ResetPasswordPage = () => {
     }
 
     try {
-      await axios.post("http://localhost:5000/api/reset-password", { token, newPassword });
+      await axios.post(
+        "https://caresync-psh6.onrender.com/api/reset-password",
+        {
+          token,
+          newPassword,
+        }
+      );
       toast({
         title: "Success!",
         description: "Your password has been reset.",
@@ -50,17 +64,32 @@ const ResetPasswordPage = () => {
   };
 
   return (
-    <Flex height="100vh" width="100vw" bg="teal.600" align="center" justify="center">
-
-
+    <Flex
+      height="100vh"
+      width="100vw"
+      bg="teal.600"
+      align="center"
+      justify="center"
+    >
       <Box bg="white" p={8} borderRadius="lg" width={700}>
-        <Text fontSize="2xl" fontWeight="bold" color="teal.700" mb="4" textAlign="center">
+        <Text
+          fontSize="2xl"
+          fontWeight="bold"
+          color="teal.700"
+          mb="4"
+          textAlign="center"
+        >
           Reset Password
         </Text>
         <form onSubmit={handleSubmit}>
           <FormControl isRequired>
             <FormLabel color="gray.700">New Password</FormLabel>
-            <Input type="password" value={newPassword} onChange={handleChange} color="black" />
+            <Input
+              type="password"
+              value={newPassword}
+              onChange={handleChange}
+              color="black"
+            />
           </FormControl>
           <Button type="submit" colorScheme="teal" mt={4} width="full">
             Reset Password

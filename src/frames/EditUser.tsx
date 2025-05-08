@@ -43,7 +43,7 @@ const EditUser: React.FC = () => {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:5000/api/getUser/${id}`)
+      .get(`https://caresync-psh6.onrender.com/api/getUser/${id}`)
       .then((res) => {
         setUserData(res.data.data);
         setLoading(false);
@@ -68,7 +68,7 @@ const EditUser: React.FC = () => {
     // Real-time validation
     if (name === "role") {
       const validRoles = ["admin", "doctor", "nurse"];
-      setValidationErrors(prev => ({
+      setValidationErrors((prev) => ({
         ...prev,
         role: validRoles.includes(value.toLowerCase())
           ? ""
@@ -78,7 +78,7 @@ const EditUser: React.FC = () => {
 
     if (name === "phone") {
       const phoneRegex = /^\d{10}$/;
-      setValidationErrors(prev => ({
+      setValidationErrors((prev) => ({
         ...prev,
         phone: phoneRegex.test(value)
           ? ""
@@ -88,11 +88,9 @@ const EditUser: React.FC = () => {
 
     if (name === "email") {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      setValidationErrors(prev => ({
+      setValidationErrors((prev) => ({
         ...prev,
-        email: emailRegex.test(value)
-          ? ""
-          : "Invalid email format",
+        email: emailRegex.test(value) ? "" : "Invalid email format",
       }));
     }
   };
@@ -101,7 +99,7 @@ const EditUser: React.FC = () => {
     e.preventDefault();
     console.log("Submitting updated user:", userData);
 
-    if (Object.values(userData).some(v => String(v).trim() === "")) {
+    if (Object.values(userData).some((v) => String(v).trim() === "")) {
       toast({
         title: "Validation Error",
         description: "All fields must be filled.",
@@ -112,7 +110,7 @@ const EditUser: React.FC = () => {
       return;
     }
 
-    if (Object.values(validationErrors).some(msg => msg !== "")) {
+    if (Object.values(validationErrors).some((msg) => msg !== "")) {
       toast({
         title: "Validation Error",
         description: "Please fix the errors before submitting.",
@@ -124,7 +122,7 @@ const EditUser: React.FC = () => {
     }
 
     axios
-      .put(`http://localhost:5000/api/update-user/${id}`, userData)
+      .put(`https://caresync-psh6.onrender.com/api/update-user/${id}`, userData)
       .then((res) => {
         toast({
           title: "Success!",
@@ -148,8 +146,19 @@ const EditUser: React.FC = () => {
   };
 
   return (
-    <Flex height="100vh" width="100vw" bg="teal.600" align="center" justify="center">
-      <Button position="absolute" top="20px" left="20px" onClick={() => navigate(-1)}>
+    <Flex
+      height="100vh"
+      width="100vw"
+      bg="teal.600"
+      align="center"
+      justify="center"
+    >
+      <Button
+        position="absolute"
+        top="20px"
+        left="20px"
+        onClick={() => navigate(-1)}
+      >
         <ArrowBackIcon boxSize={7} />
       </Button>
 
@@ -227,7 +236,9 @@ const EditUser: React.FC = () => {
               colorScheme="teal"
               mt={6}
               width="full"
-              isDisabled={Object.values(validationErrors).some(msg => msg !== "")}
+              isDisabled={Object.values(validationErrors).some(
+                (msg) => msg !== ""
+              )}
             >
               Save Changes
             </Button>

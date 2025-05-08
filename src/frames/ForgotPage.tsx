@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Box,
   Button,
@@ -17,42 +17,46 @@ import { useNavigate } from "react-router-dom";
 
 const ForgotPage = () => {
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState(""); 
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false); // Loading state for API request
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   // Function to handle password reset request
   const [isError, setIsError] = useState(false); // New state for error handling
-  
+
   const handleForgotPassword = async () => {
     if (!email) {
       setMessage("Please enter your email address.");
       setIsError(true); // Indicate this is an error message
       return;
     }
-  
+
     setLoading(true);
     try {
-      const response = await axios.post("http://localhost:5000/api/forgot-password", { email });
-  
-      setMessage(response.data.message || "Check your email for reset instructions.");
+      const response = await axios.post(
+        "https://caresync-psh6.onrender.com/api/forgot-password",
+        { email }
+      );
+
+      setMessage(
+        response.data.message || "Check your email for reset instructions."
+      );
       setIsError(false); // Mark as a success message
     } catch (error) {
       let errorMessage = "An error occurred. Try again later.";
-  
+
       if (axios.isAxiosError(error)) {
         errorMessage = error.response?.data?.message || errorMessage;
       } else if (error instanceof Error) {
         errorMessage = error.message;
       }
-  
+
       setMessage(errorMessage);
       setIsError(true); // Mark as an error message
     }
-  
+
     setLoading(false);
   };
-  
 
   return (
     <Flex
@@ -100,12 +104,15 @@ const ForgotPage = () => {
             Forgot Password
           </Heading>
           <Text textAlign="center" mb={6} color="gray.600">
-            Enter your email address, and we'll send you a link to reset your password.
+            Enter your email address, and we'll send you a link to reset your
+            password.
           </Text>
 
           {/* Email Input */}
           <InputGroup mb={4}>
-            <InputLeftElement children={<Icon as={FaEnvelope} color="gray.400" />} />
+            <InputLeftElement
+              children={<Icon as={FaEnvelope} color="gray.400" />}
+            />
             <Input
               placeholder="Email Address"
               type="email"
@@ -133,9 +140,13 @@ const ForgotPage = () => {
 
           {/* Message Display */}
           {message && (
-            <Text textAlign="center" mt={4} color={isError ? "red.600" : "green.600"}>
-            {message}
-          </Text>          
+            <Text
+              textAlign="center"
+              mt={4}
+              color={isError ? "red.600" : "green.600"}
+            >
+              {message}
+            </Text>
           )}
 
           {/* Back to Login Button */}

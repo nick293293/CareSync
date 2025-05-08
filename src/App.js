@@ -1,6 +1,6 @@
 import React from "react";
 import { ChakraProvider } from "@chakra-ui/react";
-import PatientLookup from "./components/PatientLookup";
+import PatientLookup from "./components/PatientLookup.tsx";
 
 function App() {
   return (

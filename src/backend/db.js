@@ -1,4 +1,5 @@
 const mysql = require("mysql2");
+require("dotenv").config();
 
 const db = mysql.createConnection({
     host: "hospital-db.c7y0a4ywyv12.us-east-2.rds.amazonaws.com",
