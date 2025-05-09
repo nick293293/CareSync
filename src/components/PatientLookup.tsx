@@ -68,7 +68,7 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
 
     try {
       const response = await axios.get(
-        `https://caresync-psh6.onrender.com/api/patients?query=${query}`
+        `https://caresync-psh6.onrender.com/api/patientslookup?query=${query}`
       );
       if (response.data.success) {
         setPatients(response.data.data);
@@ -87,7 +87,7 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
     try {
       const formattedDob = new Date(newPatient.dob).toISOString().split("T")[0];
       const response = await axios.post(
-        "https://caresync-psh6.onrender.com/api/patientslookup",
+        "https://caresync-psh6.onrender.com/api/patients",
         {
           ...newPatient,
           dob: formattedDob,
