@@ -88,7 +88,7 @@ const ManageAppointments = () => {
   const fetchPatients = async () => {
     try {
       const response = await axios.get(
-        "https://caresync-psh6.onrender.com/api/patients"
+        "https://caresync-psh6.onrender.com/api/patients?query=" // ✅ include empty query param
       );
       if (response.data.success) {
         setPatients(response.data.data);

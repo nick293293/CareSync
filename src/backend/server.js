@@ -618,9 +618,28 @@ app.put("/api/update-user/:id", (req, res) => {
 //  Patient Lookup API (Secure SQL)
 // =============================
 app.get("/api/patients", (req, res) => {
-  db.query("SELECT * FROM patients", (err, results) => {
+  const query = req.query.query || "";
+
+  let sql, values;
+
+  if (!query.trim()) {
+    // Return all patients if no query provided
+    sql = "SELECT * FROM patients";
+    values = [];
+  } else {
+    sql = `
+      SELECT * FROM patients 
+      WHERE 
+        LOWER(name) LIKE ? OR 
+        CAST(patient_id AS CHAR) LIKE ?
+    `;
+    const value = `${query.toLowerCase()}%`;
+    values = [value, value];
+  }
+
+  db.query(sql, values, (err, results) => {
     if (err) {
-      console.error("Error fetching patients:", err);
+      console.error("Search error:", err);
       return res.status(500).json({ success: false, message: "Database error" });
     }
 
@@ -628,27 +647,6 @@ app.get("/api/patients", (req, res) => {
   });
 });
 
-
-  
-
-// Add patients
-app.post("/api/patients", (req, res) => {
-  const { name, dob, address, phone_number, email } = req.body;
-
-  if (!name || !dob) {
-    return res.status(400).json({ success: false, message: "Name and DOB are required" });
-  }
-
-  const sql = "INSERT INTO patients (name, dob, address, phone_number, email) VALUES (?, ?, ?, ?, ?)";
-  db.query(sql, [name, dob, address, phone_number, email], (err, result) => {
-    if (err) {
-      console.error("❌ Error adding patient:", err);
-      return res.status(500).json({ success: false, message: "Database error" });
-    }
-
-    res.json({ success: true, message: "Patient added successfully", data: { id: result.insertId, name, dob, address, phone_number, email } });
-  });
-});
 
 //Remove Patients
 app.delete("/api/patients/:id", (req, res) => {
