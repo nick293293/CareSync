@@ -87,7 +87,7 @@ const PatientLookup: React.FC<PatientLookupProps> = ({ isOpen, onClose }) => {
     try {
       const formattedDob = new Date(newPatient.dob).toISOString().split("T")[0];
       const response = await axios.post(
-        "https://caresync-psh6.onrender.com/api/patients",
+        "https://caresync-psh6.onrender.com/api/patientslookup",
         {
           ...newPatient,
           dob: formattedDob,
