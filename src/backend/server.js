@@ -618,23 +618,26 @@ app.put("/api/update-user/:id", (req, res) => {
 //  Patient Lookup API (Secure SQL)
 // =============================
 app.get("/api/patients", (req, res) => {
-  const query = req.query.query || "";
+  const query = "SELECT * FROM patients";
 
-  let sql, values;
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Error fetching patients:", err);
+      return res.status(500).json({ success: false, message: "Database error" });
+    }
 
-  if (!query.trim()) {
-    // Return all patients if no query provided
-    sql = "SELECT * FROM patients";
-    values = [];
-  } else {
-    sql = `
-      SELECT * FROM patients 
-      WHERE 
-        LOWER(name) LIKE ? OR 
-        CAST(patient_id AS CHAR) LIKE ?
-    `;
-    const value = `${query.toLowerCase()}%`;
-    values = [value, value];
+    res.json({ success: true, data: results });
+  });
+});
+
+  
+
+// Add patients
+app.post("/api/patients", (req, res) => {
+  const { name, dob, address, phone_number, email } = req.body;
+
+  if (!name || !dob) {
+    return res.status(400).json({ success: false, message: "Name and DOB are required" });
   }
 
   db.query(sql, values, (err, results) => {
