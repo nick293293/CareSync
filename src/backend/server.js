@@ -614,34 +614,20 @@ app.put("/api/update-user/:id", (req, res) => {
 // =============================
 //  Patient Lookup API (Secure SQL)
 // =============================
+// =============================
+//  Patient Lookup API (Secure SQL)
+// =============================
 app.get("/api/patients", (req, res) => {
-  const query = req.query.query || "";
-
-  let sql, values;
-
-  if (!query.trim()) {
-    sql = "SELECT * FROM patients"; // fetch all
-    values = [];
-  } else {
-    sql = `
-      SELECT * FROM patients 
-      WHERE 
-        LOWER(name) LIKE ? OR 
-        CAST(patient_id AS CHAR) LIKE ?
-    `;
-    const value = `${query.toLowerCase()}%`;
-    values = [value, value];
-  }
-
-  db.query(sql, values, (err, results) => {
+  db.query("SELECT * FROM patients", (err, results) => {
     if (err) {
-      console.error("Search error:", err);
+      console.error("Error fetching patients:", err);
       return res.status(500).json({ success: false, message: "Database error" });
     }
 
     res.json({ success: true, data: results });
   });
 });
+
 
   
 
